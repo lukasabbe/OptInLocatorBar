@@ -22,16 +22,16 @@ public abstract class ServerPlayerMixin extends PlayerEntity{
 
     public ServerPlayerMixin(World world, GameProfile profile) { super(world, profile); }
 
-    @Shadow public abstract ServerWorld getWorld();
-
     @Shadow @Final private static EntityAttributeModifier WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER;
+
+    @Shadow public abstract ServerWorld getEntityWorld();
 
     @Inject(
             method = "updateCreativeInteractionRangeModifiers",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/attribute/EntityAttributeInstance;removeModifier(Lnet/minecraft/entity/attribute/EntityAttributeModifier;)V", ordinal = 2),
             cancellable = true)
     void optInLocatorBar(CallbackInfo ci, @Local(ordinal = 2) EntityAttributeInstance entityAttributeInstance){
-        LocatorBarOptInAttachedData data = this.getWorld().getAttachedOrCreate(ModAttachmentTypes.LOCATOR_BAR_OPT_IN);
+        LocatorBarOptInAttachedData data = this.getEntityWorld().getAttachedOrCreate(ModAttachmentTypes.LOCATOR_BAR_OPT_IN);
         if(!data.getValue(this.uuid)){
             entityAttributeInstance.updateModifier(WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER);
             ci.cancel();
