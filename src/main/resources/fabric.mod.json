@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "optinlocatorbar",
+  "version": "${version}",
+  "name": "OptInLocatorBar",
+  "description": "An mod were you as a player can opt in to be visible on the locator bar",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/optinlocatorbar/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "server": [
+      "com.lukasabbe.optinlocatorbar.OptInLocatorBar"
+    ]
+  },
+  "mixins": [
+    "optinlocatorbar.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
