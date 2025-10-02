@@ -3,7 +3,7 @@
 With this mod you as the player can opt in to be visible on the locator bar.
 
 ```
-/locatorbar <disable | enable> this will enable/disable the locator bar for your self
+/locatorbar <disable | enable> this will enable/disable the locator bar for yourself
 ```
 
 Example:
