@@ -3,13 +3,11 @@ package com.lukasabbe.optinlocatorbar;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 
 public class OptInLocatorBar implements DedicatedServerModInitializer {
     public static final String MOD_ID = "optinlocatorbar";
@@ -20,52 +18,52 @@ public class OptInLocatorBar implements DedicatedServerModInitializer {
         CommandRegistrationCallback.EVENT.register(
                 ((commandDispatcher, commandRegistryAccess, registrationEnvironment) ->  {
             commandDispatcher.register(
-                    CommandManager.
+                    Commands.
                             literal("locatorbar")
-                            .requires(ServerCommandSource::isExecutedByPlayer)
-                            .then(CommandManager.literal("enable").executes(ctx -> runCommand(ctx, true)))
-                            .then(CommandManager.literal("disable").executes(ctx -> runCommand(ctx, false)))
+                            .requires(CommandSourceStack::isPlayer)
+                            .then(Commands.literal("enable").executes(ctx -> runCommand(ctx, true)))
+                            .then(Commands.literal("disable").executes(ctx -> runCommand(ctx, false)))
                             .executes(this::statusCommand)
             );
         }));
     }
 
-    private int statusCommand(CommandContext<ServerCommandSource> serverCommandSourceCommandContext) {
+    private int statusCommand(CommandContext<CommandSourceStack> serverCommandSourceCommandContext) {
 
-        ServerPlayerEntity player = serverCommandSourceCommandContext.getSource().getPlayer();
+        ServerPlayer player = serverCommandSourceCommandContext.getSource().getPlayer();
 
         if(player == null) return 0;
 
-        ServerWorld world = serverCommandSourceCommandContext.getSource().getWorld();
+        Level world = serverCommandSourceCommandContext.getSource().getLevel();
         LocatorBarOptInAttachedData data = world.getAttachedOrCreate(ModAttachmentTypes.LOCATOR_BAR_OPT_IN);
 
         boolean isOpedIn;
 
-        if(!data.playerOptInData().containsKey(player.getUuid().toString())){
-            world.setAttached(ModAttachmentTypes.LOCATOR_BAR_OPT_IN, data.setValue(player.getUuid(), true));
+        if(!data.playerOptInData().containsKey(player.getUUID().toString())){
+            world.setAttached(ModAttachmentTypes.LOCATOR_BAR_OPT_IN, data.setValue(player.getUUID(), true));
             isOpedIn = true;
         }else{
-            isOpedIn = data.playerOptInData().get(player.getUuid().toString());
+            isOpedIn = data.playerOptInData().get(player.getUUID().toString());
         }
 
-        if(isOpedIn) serverCommandSourceCommandContext.getSource().sendMessage(Text.literal("You are visible to other players through the locator bar"));
-        else serverCommandSourceCommandContext.getSource().sendMessage(Text.literal("You are not visible to other players through the locator bar"));
+        if(isOpedIn) serverCommandSourceCommandContext.getSource().sendSystemMessage(Component.literal("You are visible to other players through the locator bar"));
+        else serverCommandSourceCommandContext.getSource().sendSystemMessage(Component.literal("You are not visible to other players through the locator bar"));
 
         return 1;
     }
 
-    private int runCommand(CommandContext<ServerCommandSource> serverCommandSourceCommandContext, boolean status) {
-        ServerPlayerEntity player = serverCommandSourceCommandContext.getSource().getPlayer();
+    private int runCommand(CommandContext<CommandSourceStack> serverCommandSourceCommandContext, boolean status) {
+        ServerPlayer player = serverCommandSourceCommandContext.getSource().getPlayer();
 
         if(player == null) return 0;
 
-        ServerWorld world = serverCommandSourceCommandContext.getSource().getWorld();
+        Level world = serverCommandSourceCommandContext.getSource().getLevel();
         LocatorBarOptInAttachedData data = world.getAttachedOrCreate(ModAttachmentTypes.LOCATOR_BAR_OPT_IN);
 
-        world.setAttached(ModAttachmentTypes.LOCATOR_BAR_OPT_IN, data.setValue(player.getUuid(), status));
+        world.setAttached(ModAttachmentTypes.LOCATOR_BAR_OPT_IN, data.setValue(player.getUUID(), status));
 
-        if(status) serverCommandSourceCommandContext.getSource().sendMessage(Text.literal("You are now visible to other players through the locator bar"));
-        else serverCommandSourceCommandContext.getSource().sendMessage(Text.literal("You are now not visible to other players through the locator bar"));
+        if(status) serverCommandSourceCommandContext.getSource().sendSystemMessage(Component.literal("You are now visible to other players through the locator bar"));
+        else serverCommandSourceCommandContext.getSource().sendSystemMessage(Component.literal("You are now not visible to other players through the locator bar"));
 
         return 1;
     }
